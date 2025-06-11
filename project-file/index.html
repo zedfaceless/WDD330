@@ -12,52 +12,41 @@
     <div class="logo">🎧 MusicStream</div>
     <nav>
       <ul>
-        <li><a href="#" class="active">Home</a></li>
-        <li><a href="#">Trending</a></li>
-        <li><a href="#">Playlists</a></li>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="trending.html">Trending</a></li>
+        <li><a href="playlists.html">Playlists</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
     <section class="hero">
-      <h1>Feel the Vibe, Stream the Beat</h1>
-      <p>Discover new music, read lyrics, and build your ultimate playlist — all in one place.</p>
-      <button class="cta">Explore Music</button>
+      <div class="hero-content">
+        <h1>Feel the Music, Stream the Beat</h1>
+        <p>Discover new music, read lyrics, and build your ultimate playlist — all in one place.</p>
+        <button class="cta" id="exploreBtn">Explore Music</button>
+      </div>
     </section>
 
-    <!-- 🔍 Search Section -->
     <section class="search-section">
       <h2>Search Music</h2>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search for songs, artists, albums..." />
         <button id="searchBtn">Search</button>
       </div>
-      <ul id="searchSuggestions" class="suggestions-list"></ul>
-    </section>
-
-    <section class="section trending">
-      <h2>🔥 Trending Tracks</h2>
-      <div class="card-grid">
-        <div class="track-card">Coming Soon</div>
-        <div class="track-card">Coming Soon</div>
-        <div class="track-card">Coming Soon</div>
-      </div>
+      <ul id="resultsList" class="suggestions-list"></ul>
     </section>
 
     <section class="section lyrics-view">
       <h2>🎤 Lyrics Viewer</h2>
-      <div class="lyrics-box">Lyrics will appear here...</div>
-    </section>
-
-    <section class="section playlist-builder">
-      <h2>Playlist Builder</h2>
-      <div class="playlist-box">Create and manage your custom playlists.</div>
+      <div id="lyricsBox" class="lyrics-box">Lyrics will appear here...</div>
     </section>
   </main>
 
   <footer>
     <p>&copy; 2025 MusicStream. Made with 🎵 by Zed Fernandez</p>
   </footer>
+
+  <script type="module" src="script/app.js"></script>
 </body>
 </html>

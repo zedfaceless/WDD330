@@ -218,6 +218,38 @@ footer {
   margin-top: 2rem;
 }
 
+.hero {
+  text-align: center;
+  padding: 6rem 1rem;
+  background: url('../images/hero-new.webp') no-repeat center;
+  color: #fff;
+  position: relative;
+}
+
+.hero-content {
+  background-color: rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.hero h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  color: #00BFFF;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero h1 {
