@@ -1,5 +1,5 @@
 const clientId = '24bf9cff22ce4661839c62050f7e45b8';
-const redirectUri = 'http://127.0.0.1:5500/WDD330/project-file/index.html';
+const redirectUri = 'https://zedfaceless.github.io/WDD330/project%20file/index.html';
 const scopes = 'user-read-private user-read-email';
 
 window.addEventListener('DOMContentLoaded', () => {
