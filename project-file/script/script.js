@@ -1,134 +1,198 @@
 const clientId = "5ba5248c4ec44b9bbecfd38df473919b";
 const redirectUri = "https://zedfaceless.github.io/WDD330/project%20file/index.html";
 const scopes = "user-read-private user-read-email";
+
 console.log("🎵 script.js loaded");
 
-// PKCE Helpers
-function generateRandomString(len) {
-  return Array.from(crypto.getRandomValues(new Uint8Array(len)), b => b.toString(16).padStart(2, '0')).join('');
+// --- PKCE Helpers ---
+function generateRandomString(length) {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => ('0' + byte.toString(16)).slice(-2)).join('');
 }
-function base64UrlEncode(a) {
-  return btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function base64UrlEncode(str) {
+  return btoa(String.fromCharCode(...new Uint8Array(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-async function sha256(v) {
-  return crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return await crypto.subtle.digest("SHA-256", data);
+}
+async function createCodeChallenge(verifier) {
+  const hashed = await sha256(verifier);
+  return base64UrlEncode(hashed);
 }
 
-// Redirect to Spotify
+// --- Redirect to Spotify Auth ---
 async function redirectToSpotifyAuth() {
-  const verifier = generateRandomString(64);
-  const challenge = base64UrlEncode(await sha256(verifier));
-  localStorage.setItem("spotify_code_verifier", verifier);
+  const codeVerifier = generateRandomString(64);
+  const codeChallenge = await createCodeChallenge(codeVerifier);
+  localStorage.setItem("spotify_code_verifier", codeVerifier);
 
-  const params = new URLSearchParams({
+  const args = new URLSearchParams({
     client_id: clientId,
     response_type: "code",
     redirect_uri: redirectUri,
     scope: scopes,
     code_challenge_method: "S256",
-    code_challenge: challenge
+    code_challenge: codeChallenge,
   });
-  window.location = `https://accounts.spotify.com/authorize?${params}`;
+
+  window.location = `https://accounts.spotify.com/authorize?${args.toString()}`;
 }
 
-// Exchange Code for Token + Setup App
+// --- Exchange Code for Token ---
 async function handleRedirectAndSetup() {
-  const code = new URLSearchParams(window.location.search).get("code");
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get("code");
   if (!code) return;
 
-  const verifier = localStorage.getItem("spotify_code_verifier");
+  const codeVerifier = localStorage.getItem("spotify_code_verifier");
+
   const body = new URLSearchParams({
     client_id: clientId,
     grant_type: "authorization_code",
-    code, redirect_uri: redirectUri, code_verifier: verifier
+    code: code,
+    redirect_uri: redirectUri,
+    code_verifier: codeVerifier
   });
 
   try {
-    const res = await fetch("https://accounts.spotify.com/api/token", {
+    const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString()
     });
-    const data = await res.json();
+
+    const data = await response.json();
+
     if (data.access_token) {
       localStorage.setItem("spotify_access_token", data.access_token);
-      window.history.replaceState({}, "", redirectUri);
+      // Remove ?code= from URL
+      window.history.replaceState({}, document.title, redirectUri);
+
       setupApp(data.access_token);
     } else {
-      console.error("Token error:", data);
+      console.error("❌ Token error:", data);
     }
-  } catch (e) {
-    console.error("Exchange failed:", e);
+  } catch (err) {
+    console.error("❌ Token fetch failed:", err);
   }
 }
 
-// Fetch User Profile
+// --- Show Logged-in User ---
 async function fetchUserProfile(token) {
-  const res = await fetch("https://api.spotify.com/v1/me", {
+  const response = await fetch("https://api.spotify.com/v1/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
-  const data = await res.json();
-  const p = document.createElement("p");
-  p.textContent = `🎉 Logged in as ${data.display_name || data.id}`;
-  p.style.fontWeight = "bold";
-  document.querySelector(".hero-content").appendChild(p);
+  const data = await response.json();
+
+  const hero = document.querySelector(".hero-content");
+  if (hero) {
+    const msg = document.createElement("p");
+    msg.textContent = `🎉 Logged in as ${data.display_name || data.id}`;
+    msg.style.fontWeight = "bold";
+    hero.appendChild(msg);
+  }
 }
 
-// Search Music
+// --- Search Music ---
 async function searchMusic(token) {
-  const q = document.getElementById("searchInput").value.trim();
-  if (!q) return;
-  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=5`, {
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+
+  const query = input.value.trim();
+  if (!query) return;
+
+  const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  const { tracks } = await res.json();
-  displayResults(tracks.items || []);
+
+  const data = await response.json();
+  const results = data.tracks?.items || [];
+  displayResults(results, token);
 }
 
-// Display Results
-function displayResults(list) {
-  const ul = document.getElementById("resultsList");
-  ul.innerHTML = "";
-  list.forEach(t => {
+// --- Show Results ---
+function displayResults(tracks, token) {
+  const list = document.getElementById("resultsList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  tracks.forEach(track => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${t.name}</strong> — ${t.artists[0].name}<br/>
-      <button class="preview" data-preview="${t.preview_url}">▶️ Preview</button>
-      <button class="lyrics" data-title="${t.name}" data-artist="${t.artists[0].name}">📝 Lyrics</button>
+      <strong>${track.name}</strong> by ${track.artists[0].name}<br/>
+      <button data-url="${track.preview_url}">▶️ Preview</button>
+      <button data-title="${track.name}" data-artist="${track.artists[0].name}">📝 Lyrics</button>
     `;
-    ul.appendChild(li);
+    list.appendChild(li);
   });
 
-  ul.querySelectorAll(".preview").forEach(b =>
-    b.onclick = () => new Audio(b.dataset.preview).play()
-  );
-  ul.querySelectorAll(".lyrics").forEach(b =>
-    b.onclick = () => fetchLyrics(b.dataset.title, b.dataset.artist)
-  );
+  list.querySelectorAll("button[data-url]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const audio = new Audio(btn.dataset.url);
+      audio.play();
+    });
+  });
+
+  list.querySelectorAll("button[data-title]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const title = btn.dataset.title;
+      const artist = btn.dataset.artist;
+      fetchLyrics(title, artist);
+    });
+  });
 }
 
-// Fetch Lyrics
+// --- Fetch Lyrics ---
 async function fetchLyrics(title, artist) {
-  const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
-  const { lyrics } = await res.json();
-  document.getElementById("lyricsBox").textContent = lyrics || "❌ Lyrics not found.";
+  const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
+  const data = await response.json();
+
+  const lyricsBox = document.getElementById("lyricsBox");
+  if (!lyricsBox) return;
+
+  lyricsBox.textContent = data.lyrics || "❌ No lyrics found.";
 }
 
-// Setup App after login
+// --- App Setup ---
 function setupApp(token) {
   fetchUserProfile(token);
-  document.getElementById("searchBtn").onclick = () => searchMusic(token);
-  document.getElementById("exploreBtn").onclick = () => {
-    document.querySelector(".search-section").scrollIntoView({ behavior: "smooth" });
-    document.getElementById("searchInput").focus();
-  };
+
+  const searchBtn = document.getElementById("searchBtn");
+  if (searchBtn) {
+    searchBtn.addEventListener("click", () => searchMusic(token));
+  }
+
+  const exploreBtn = document.getElementById("exploreBtn");
+  if (exploreBtn) {
+    exploreBtn.addEventListener("click", () => {
+      const section = document.querySelector(".search-section");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+        const input = document.getElementById("searchInput");
+        if (input) input.focus();
+      }
+    });
+  }
 }
 
-// Initialize on DOM load
-window.onload = () => {
-  document.getElementById("loginBtn").onclick = redirectToSpotifyAuth;
+// --- Initialize ---
+window.addEventListener("DOMContentLoaded", () => {
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", redirectToSpotifyAuth);
+  }
 
+  const urlParams = new URLSearchParams(window.location.search);
   const token = localStorage.getItem("spotify_access_token");
-  if (token) setupApp(token);
-  else handleRedirectAndSetup();
-};
+
+  if (urlParams.has("code")) {
+    handleRedirectAndSetup(); // This calls setupApp internally
+  } else if (token) {
+    setupApp(token);
+  }
+});
