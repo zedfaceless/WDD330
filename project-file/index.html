@@ -19,34 +19,39 @@
     </nav>
   </header>
 
-  <main>
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Feel the Music, Stream the Beat</h1>
-        <p>Discover new music, read lyrics, and build your ultimate playlist — all in one place.</p>
-        <button class="cta" id="loginBtn">Login with Spotify</button>
-      </div>
-    </section>
+<main>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Feel the Music, Stream the Beat</h1>
+      <p>Discover new music, read lyrics, and build your ultimate playlist — all in one place.</p>
+      <!-- Spotify Login Button -->
+      <button class="cta" id="loginBtn">Login with Spotify</button>
+      <button class="cta secondary" id="exploreBtn">Explore Music</button>
+      <p id="userInfo" class="user-info" style="display:none;"></p>
+    </div>
+  </section>
 
-    <section class="search-section">
-      <h2>Search Music</h2>
-      <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search for songs, artists, albums..." />
-        <button id="searchBtn">Search</button>
-      </div>
-      <ul id="resultsList" class="suggestions-list"></ul>
-    </section>
+  <section class="search-section">
+    <h2>Search Music</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search for songs, artists, albums..." />
+      <button id="searchBtn">Search</button>
+    </div>
+    <ul id="resultsList" class="suggestions-list"></ul>
+  </section>
 
-    <section class="section lyrics-view">
-      <h2>🎤 Lyrics Viewer</h2>
-      <div id="lyricsBox" class="lyrics-box">Lyrics will appear here...</div>
-    </section>
-  </main>
+  <section class="section lyrics-view">
+    <h2>🎤 Lyrics Viewer</h2>
+    <div id="lyricsBox" class="lyrics-box">Lyrics will appear here...</div>
+  </section>
+</main>
+
 
   <footer>
     <p>&copy; 2025 MusicStream. Made with 🎵 by Zed Fernandez</p>
   </footer>
 
+  <!-- Updated script with PKCE OAuth flow -->
   <script type="module" src="script/script.js"></script>
 </body>
 </html>
