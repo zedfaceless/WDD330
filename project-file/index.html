@@ -24,7 +24,7 @@
     <div class="hero-content">
       <h1>Feel the Music, Stream the Beat</h1>
       <p>Discover new music, read lyrics, and build your ultimate playlist — all in one place.</p>
-      <!-- Spotify Login Button -->
+      <!-- ✅ Ensure login & explore buttons are present -->
       <button class="cta" id="loginBtn">Login with Spotify</button>
       <button class="cta secondary" id="exploreBtn">Explore Music</button>
       <p id="userInfo" class="user-info" style="display:none;"></p>
@@ -37,6 +37,7 @@
       <input type="text" id="searchInput" placeholder="Search for songs, artists, albums..." />
       <button id="searchBtn">Search</button>
     </div>
+    <!-- ✅ Ensure results and lyrics boxes are present -->
     <ul id="resultsList" class="suggestions-list"></ul>
   </section>
 
@@ -46,12 +47,11 @@
   </section>
 </main>
 
+<footer>
+  <p>&copy; 2025 MusicStream. Made with 🎵 by Zed Fernandez</p>
+</footer>
 
-  <footer>
-    <p>&copy; 2025 MusicStream. Made with 🎵 by Zed Fernandez</p>
-  </footer>
-
-  <!-- Updated script with PKCE OAuth flow -->
-  <script type="module" src="script/script.js"></script>
+<!-- ✅ Script should be at the very end -->
+<script type="module" src="script/script.js"></script>
 </body>
 </html>

@@ -10,15 +10,18 @@ function generateRandomString(length) {
   crypto.getRandomValues(array);
   return Array.from(array, byte => ('0' + byte.toString(16)).slice(-2)).join('');
 }
+
 function base64UrlEncode(str) {
   return btoa(String.fromCharCode(...new Uint8Array(str)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
+
 async function sha256(plain) {
   const encoder = new TextEncoder();
   const data = encoder.encode(plain);
   return await crypto.subtle.digest("SHA-256", data);
 }
+
 async function createCodeChallenge(verifier) {
   const hashed = await sha256(verifier);
   return base64UrlEncode(hashed);
@@ -69,9 +72,7 @@ async function handleRedirectAndSetup() {
 
     if (data.access_token) {
       localStorage.setItem("spotify_access_token", data.access_token);
-      // Remove ?code= from URL
       window.history.replaceState({}, document.title, redirectUri);
-
       setupApp(data.access_token);
     } else {
       console.error("❌ Token error:", data);
@@ -153,9 +154,9 @@ async function fetchLyrics(title, artist) {
   const data = await response.json();
 
   const lyricsBox = document.getElementById("lyricsBox");
-  if (!lyricsBox) return;
-
-  lyricsBox.textContent = data.lyrics || "❌ No lyrics found.";
+  if (lyricsBox) {
+    lyricsBox.textContent = data.lyrics || "❌ No lyrics found.";
+  }
 }
 
 // --- App Setup ---
@@ -191,7 +192,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("spotify_access_token");
 
   if (urlParams.has("code")) {
-    handleRedirectAndSetup(); // This calls setupApp internally
+    handleRedirectAndSetup();
   } else if (token) {
     setupApp(token);
   }
